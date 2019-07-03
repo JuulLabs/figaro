@@ -10,7 +10,11 @@ module Figaro
       end
 
       def default_environment
-        ::Rails.env
+        unless ::ENV['STACK_NAME'].nil?
+          "#{::Rails.env}/#{::ENV['STACK_NAME']}"
+        else
+          ::Rails.env
+        end
       end
 
       def rails_not_initialized!

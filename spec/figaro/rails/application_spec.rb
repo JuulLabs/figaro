@@ -35,6 +35,16 @@ module Figaro
             application.send(:default_environment).to_s
           }.from("development").to("test")
         end
+
+        it "uses env/stackname when STACK_NAME is present" do
+          allow(::Rails).to receive(:env) { "development" }
+          allow(::ENV).to receive(:[]).
+            with('STACK_NAME').
+            and_return('mystack')
+
+          expect(application.send(:default_environment)).to eq "development/mystack"
+        end
+
       end
     end
   end
