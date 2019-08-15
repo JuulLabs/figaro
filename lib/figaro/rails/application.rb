@@ -1,8 +1,6 @@
 module Figaro
   module Rails
     class Application < Figaro::Application
-      private
-
       def default_path
         rails_not_initialized! unless ::Rails.root
 
