@@ -1,6 +1,13 @@
 module Figaro
   module Rails
     class Application < Figaro::Application
+
+      def load_secrets
+        ::Rails.application.secrets.each do |key,value|
+          skip?(key) ? key_skipped!(key) : set(key, value)
+        end
+      end
+
       private
 
       def default_path

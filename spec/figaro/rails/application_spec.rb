@@ -1,6 +1,46 @@
+require 'active_support/ordered_options'
 module Figaro
   module Rails
     describe Application do
+
+      describe "#load_secrets" do
+        let!(:application) { Application.new }
+        let(:secrets) {
+          secrets = ActiveSupport::OrderedOptions.new
+          secrets.string_key = "somevalue"
+          secrets.hash_key   = {"key" => "value"}
+          secrets.boolean_key = true
+          secrets.foo = "bar"
+          secrets
+        }
+
+        subject {
+          application.load_secrets
+        }
+
+        it "that exist in the Rails.application.secrets" do
+          allow(::Rails).to receive_message_chain(:application, :secrets) { secrets }
+          subject
+          expect(::ENV["string_key"]).to eq "somevalue"
+          expect(::ENV["hash_key"]).to eq "{\"key\"=>\"value\"}"
+          expect(::ENV["boolean_key"]).to eq "true"
+        end
+
+        it "does not overwrite values" do
+          allow(::Rails).to receive_message_chain(:application, :secrets) { secrets }
+          ::ENV["foo"] = "baz"
+
+          expect(application).to receive(:warn).at_least(:once)
+
+          expect {
+            application.load_secrets
+          }.not_to change {
+            ::ENV["foo"]
+          }
+        end
+
+      end
+
       describe "#default_path" do
         let!(:application) { Application.new }
 
