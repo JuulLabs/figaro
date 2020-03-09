@@ -85,7 +85,7 @@ module Figaro
     end
 
     def key_skipped!(key)
-      warn "WARNING: Skipping key #{key.inspect}. Already set in ENV."
+      warn "WARNING: [SKIP] Skipping key #{key.inspect}. Already set in ENV."
     end
   end
 end
