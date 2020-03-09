@@ -3,6 +3,39 @@ module Figaro
   module Rails
     describe Application do
 
+      describe "#skip_secret" do
+        let!(:application) { Application.new }
+        let(:secrets) {
+          secrets = ActiveSupport::OrderedOptions.new
+          secrets.TWILIO_CALLER_ID = "somevalue"
+          secrets
+        }
+        subject {
+          application.load_secrets
+        }
+        it "skips setting from secrets when set in ENV already" do
+          allow(::Rails).to receive_message_chain(:application, :secrets) { secrets }
+          allow(::ENV).to receive(:[]).with("TWILIO_CALLER_ID").and_return("+15555551212")
+          subject
+          expect(::ENV["TWILIO_CALLER_ID"]).to eq("+15555551212")
+        end
+
+        it "skips setting from secrets when set in Figaro app.yml already" do
+          allow(::Rails).to receive_message_chain(:application, :secrets) { secrets }
+          allow(::ENV).to receive(:[]).with("TWILIO_CALLER_ID").and_return("+15555551212")
+          allow(::ENV).to receive(:[]).with("_FIGARO_TWILIO_CALLER_ID").and_return("+15555551212")
+          subject
+          expect(::ENV["TWILIO_CALLER_ID"]).to eq("+15555551212")
+          expect(::ENV["_FIGARO_TWILIO_CALLER_ID"]).to eq("+15555551212")
+        end
+
+        it "does not skip setting from secrets when not set in env or app.yml" do
+          allow(::Rails).to receive_message_chain(:application, :secrets) { secrets }
+          subject
+          expect(::ENV["TWILIO_CALLER_ID"]).to eq("somevalue")
+        end
+      end
+
       describe "#load_secrets" do
         let!(:application) { Application.new }
         let(:secrets) {
